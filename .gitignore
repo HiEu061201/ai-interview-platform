@@ -34,3 +34,10 @@ frontend/test_notes_api.js
 test_ui.js
 check_errors.js
 test_notes_api.js
+
+# AI Agents & Specifics
+.github/agents/
+.github/prompts/
+.specify/
+ai-skills/
+.github/copilot-instructions.md
