@@ -232,13 +232,6 @@ export default function InterviewRoomPage() {
     setTimeLeft(300); // Reset timer while waiting for AI
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
   const handleEndInterview = async () => {
     try {
       const token = localStorage.getItem('token');
