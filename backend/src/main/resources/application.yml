@@ -1,0 +1,129 @@
+spring:
+  application:
+    name: ai-interview
+  
+  # DataSource Configuration
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:ai_interview_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      auto-commit: true
+  
+  # JPA/Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+    show-sql: false
+    open-in-view: false
+  
+  # Flyway Configuration
+  flyway:
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    baseline-description: Initial Schema
+    validate-on-migrate: true
+    enabled: true
+    clean-on-validation-error: true
+    clean-disabled: false
+  
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+  
+  # Servlet Configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# Server Configuration
+server:
+  port: 8080
+  compression:
+    enabled: true
+    min-response-size: 1024
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+    include-exception: false
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    org.springframework.security: DEBUG
+    org.hibernate: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.company.aiinterview: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 30
+
+# Management/Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    enable:
+      all: true
+
+# Application Custom Properties
+app:
+  jwt:
+    secret: ${JWT_SECRET:default-secret-change-in-production}
+    expiration: 3600000
+    refresh-expiration: 604800000
+  
+  # DeepSeek AI Configuration
+  deepseek:
+    api-key: ${DEEPSEEK_API_KEY:your-deepseek-api-key}
+    model: deepseek-chat
+    api-url: "https://api.deepseek.com/chat/completions"
+    max-retries: 3
+
+  # Google OAuth2 Configuration
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:662754448460-l09v2cso0jovegsi7tib59uohsd2cjh8.apps.googleusercontent.com}
+
+  interview:
+    data:
+      path: ${INTERVIEW_DATA_PATH:C:/Users/PC/Documents/Coding/interview-company-wise-problems}
+
+# Gemini Properties for GeminiServiceImpl
+gemini:
+  api:
+    url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    key: ${GEMINI_API_KEY:your_gemini_api_key_here}
+
+

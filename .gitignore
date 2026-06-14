@@ -1,0 +1,36 @@
+# Node.js / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*
+
+# Java / Spring Boot / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/
+
+# IDEs and OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Agent & Logs
+.agent/
+logs/
+.gemini/
+
+# Temporary / Test Scripts
+frontend/test_ui.js
+frontend/check_errors.js
+frontend/test_notes_api.js
+test_ui.js
+check_errors.js
+test_notes_api.js
