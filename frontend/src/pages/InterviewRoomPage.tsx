@@ -70,7 +70,7 @@ export default function InterviewRoomPage() {
       try {
         const token = localStorage.getItem('token');
         if (!token || !id) return;
-        const res = await axios.get(`http://localhost:8080/api/interviews/${id}`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + `/interviews/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.data.status === 'COMPLETED' || res.data.status === 'CANCELLED') {
@@ -134,7 +134,7 @@ export default function InterviewRoomPage() {
       const token = localStorage.getItem('token');
       if (token && id) {
         // Use keepalive to ensure the request goes through even as the page unloads
-        fetch(`http://localhost:8080/api/interviews/${id}/finish`, {
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + `/interviews/${id}/finish`, {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -156,7 +156,7 @@ export default function InterviewRoomPage() {
     const token = localStorage.getItem('token');
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws/interview'),
+      webSocketFactory: () => new SockJS(`${import.meta.env.VITE_WS_URL || 'http://localhost:8080/ws'}` + '/interview'),
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },
@@ -242,7 +242,7 @@ export default function InterviewRoomPage() {
   const handleEndInterview = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:8080/api/interviews/${id}/finish`, null, {
+      await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + `/interviews/${id}/finish`, null, {
         headers: { Authorization: `Bearer ${token}` }
       });
       navigate(`/interviews/${id}/report`);

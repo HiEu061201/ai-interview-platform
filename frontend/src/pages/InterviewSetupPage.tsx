@@ -22,7 +22,7 @@ export default function InterviewSetupPage() {
     try {
       const token = localStorage.getItem('token');
       
-      const res = await axios.post('http://localhost:8080/api/interviews', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/interviews', {
         positionRole: jobTitle,
         experienceLevel: level,
         interviewType: type,
@@ -60,7 +60,7 @@ export default function InterviewSetupPage() {
       formData.append('file', file);
       const token = localStorage.getItem('token');
 
-      const res = await axios.post('http://localhost:8080/api/interviews/extract-cv', formData, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/interviews/extract-cv', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`

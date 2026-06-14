@@ -56,6 +56,13 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- PostgreSQL Driver for Supabase/Production -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
