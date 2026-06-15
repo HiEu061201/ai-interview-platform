@@ -25,8 +25,13 @@ public class JwtProvider {
     private long refreshExpiration;
 
     private SecretKey getSignInKey() {
-        byte[] keyBytes = secretKeyString.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] keyBytes = md.digest(secretKeyString.getBytes(StandardCharsets.UTF_8));
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new RuntimeException("Failed to create JWT key", e);
+        }
     }
 
     public String generateToken(User user) {

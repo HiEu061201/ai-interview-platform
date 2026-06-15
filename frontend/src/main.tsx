@@ -7,7 +7,7 @@ import './index.css'
 import './lib/axiosInterceptor'
 
 // IMPORTANT: Replace with actual Google Client ID from .env
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '662754448460-l09v2cso0jovegsi7tib59uohsd2cjh8.apps.googleusercontent.com';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
