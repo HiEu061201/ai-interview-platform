@@ -18,7 +18,7 @@ export default function JobsPage() {
     setIsJobsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + `/jobs/recommendations?keyword=${encodeURIComponent(keyword)}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + `/jobs/recommendations?keyword=${encodeURIComponent(keyword)}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data) {

@@ -14,7 +14,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/auth/login', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + '/auth/login', {
         username,
         password
       });
@@ -34,7 +34,7 @@ export default function LoginPage() {
       if (!credential) return;
       
       // Call Backend API
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/auth/google', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + '/auth/google', {
         idToken: credential
       });
       

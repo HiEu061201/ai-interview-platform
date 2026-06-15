@@ -18,7 +18,7 @@ export default function RegisterPage() {
     setLoading(true);
     
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/auth/register', {
+      await axios.post(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + '/auth/register', {
         username,
         email,
         fullName,

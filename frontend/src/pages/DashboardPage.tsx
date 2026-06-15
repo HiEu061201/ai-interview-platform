@@ -78,16 +78,16 @@ export default function DashboardPage() {
       try {
         const token = localStorage.getItem('token');
         const [interviewsRes, analyticsRes, profileRes, questsRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/interviews', {
+          axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + '/interviews', {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/users/profile/analytics', {
+          axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + '/users/profile/analytics', {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/auth/me', {
+          axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + '/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/quests/daily', {
+          axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + '/quests/daily', {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);

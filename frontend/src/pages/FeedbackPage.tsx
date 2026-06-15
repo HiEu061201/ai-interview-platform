@@ -41,7 +41,7 @@ export default function FeedbackPage() {
     const fetchFeedback = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + `/interviews/${id}/feedback`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + `/interviews/${id}/feedback`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -49,7 +49,7 @@ export default function FeedbackPage() {
           // Feedback not yet generated, need to generate it using backend
           setGenerating(true);
           
-          const generateRes = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + `/interviews/${id}/feedback/generate`, null, {
+          const generateRes = await axios.post(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + `/interviews/${id}/feedback/generate`, null, {
             headers: { Authorization: `Bearer ${token}` }
           });
 

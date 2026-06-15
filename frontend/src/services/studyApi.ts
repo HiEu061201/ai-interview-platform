@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}` + '/study';
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + '/study';
 
 export interface StudyCategory {
   id: number;
