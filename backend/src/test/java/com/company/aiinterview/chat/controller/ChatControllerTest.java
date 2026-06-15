@@ -73,37 +73,5 @@ class ChatControllerTest {
         verify(messagingTemplate).convertAndSend(eq("/topic/interview/1"), any(java.util.Map.class));
     }
 
-    // @Test
-    void saveAiResponse_ShouldParseAndSaveAiMessage() {
-        com.company.aiinterview.chat.dto.AiResponsePayload payload = new com.company.aiinterview.chat.dto.AiResponsePayload();
-        payload.setSessionId(1L);
-        payload.setUserMessageId(10L);
-        payload.setJsonResponse("{}");
 
-        when(sessionRepository.findById(1L)).thenReturn(Optional.of(mockSession));
-        
-        ChatMessage mockUserMessage = new ChatMessage();
-        mockUserMessage.setId(10L);
-        when(chatMessageRepository.findById(10L)).thenReturn(Optional.of(mockUserMessage));
-
-        OutgoingMessage mockResponse = OutgoingMessage.builder()
-                .sender("AI")
-                .content("Next Question")
-                .clarity(80)
-                .technicalDepth(75)
-                .confidence(90)
-                .build();
-        when(aiService.parseAiResponse("{}")).thenReturn(mockResponse);
-
-        chatController.saveAiResponse(payload);
-
-        // Verify messages saved (update user message + new AI message)
-        verify(chatMessageRepository, times(2)).save(any(ChatMessage.class));
-        
-        // Verify session updated
-        verify(sessionRepository).save(mockSession);
-        
-        // Verify broadcast
-        verify(messagingTemplate).convertAndSend(eq("/topic/interview/1"), any(java.util.Map.class));
-    }
 }
