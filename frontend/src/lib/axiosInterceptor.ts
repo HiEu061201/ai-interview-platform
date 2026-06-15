@@ -1,5 +1,12 @@
 import axios from 'axios';
 
+// Global default timeout: 120 seconds (Render cold start can take ~60-120s)
+axios.defaults.timeout = 120000;
+
+// Retry config
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 3000;
+
 // Request interceptor
 axios.interceptors.request.use(
   (config) => {
@@ -14,11 +21,24 @@ axios.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor with retry on timeout/network errors
 axios.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    
+    // --- Auto-retry on timeout or network errors (NOT on 4xx/5xx) ---
+    const isNetworkOrTimeout = !error.response && (error.code === 'ECONNABORTED' || error.message?.includes('timeout') || error.message?.includes('Network Error'));
+    const retryCount = originalRequest._retryCount || 0;
+    
+    if (isNetworkOrTimeout && retryCount < MAX_RETRIES && !originalRequest._skipRetry) {
+      originalRequest._retryCount = retryCount + 1;
+      console.log(`Request timeout/network error, retrying (${originalRequest._retryCount}/${MAX_RETRIES})...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * originalRequest._retryCount));
+      return axios(originalRequest);
+    }
+
+    // --- Token refresh on 401 ---
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
       if (originalRequest.url.includes('/api/auth/refresh')) {
         localStorage.removeItem('token');
@@ -51,3 +71,4 @@ axios.interceptors.response.use(
 );
 
 export default axios;
+
