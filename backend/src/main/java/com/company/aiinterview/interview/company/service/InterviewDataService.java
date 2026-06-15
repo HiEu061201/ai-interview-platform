@@ -28,7 +28,8 @@ public class InterviewDataService {
         }
 
         File[] subdirs = rootDir.listFiles(File::isDirectory);
-        if (subdirs == null) return new ArrayList<>();
+        if (subdirs == null)
+            return new ArrayList<>();
 
         return Arrays.stream(subdirs)
                 .map(File::getName)
@@ -53,7 +54,7 @@ public class InterviewDataService {
                     firstLine = false;
                     continue; // Skip header
                 }
-                
+
                 String[] columns = parseCsvLine(line);
                 if (columns.length >= 6) {
                     questions.add(InterviewQuestion.builder()
@@ -77,7 +78,7 @@ public class InterviewDataService {
         List<String> result = new ArrayList<>();
         StringBuilder currentToken = new StringBuilder();
         boolean inQuotes = false;
-        
+
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
             if (c == '\"') {
@@ -90,7 +91,7 @@ public class InterviewDataService {
             }
         }
         result.add(currentToken.toString());
-        
+
         return result.toArray(new String[0]);
     }
 }
