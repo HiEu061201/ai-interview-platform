@@ -6,6 +6,9 @@ import { Radar } from 'react-chartjs-2';
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
+// Puter.js is loaded via <script> in index.html
+declare const puter: any;
+
 interface FeedbackData {
   id: number;
   overallScore: number;
@@ -46,14 +49,25 @@ export default function FeedbackPage() {
         });
         
         if (res.status === 204) {
-          // Feedback not yet generated, need to generate it using backend
+          // Feedback not yet generated — use Puter AI on the frontend
           setGenerating(true);
           
-          const generateRes = await axios.post(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + `/interviews/${id}/feedback/generate`, null, {
+          // Step 1: Get the feedback prompt from backend
+          const promptRes = await axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + `/interviews/${id}/feedback/prompt`, {
             headers: { Authorization: `Bearer ${token}` }
           });
 
-          setFeedback(generateRes.data);
+          // Step 2: Call Puter AI with the prompt
+          const aiResult = await puter.ai.chat(promptRes.data.prompt);
+          const aiText = typeof aiResult === 'string' ? aiResult : (aiResult?.message?.content || JSON.stringify(aiResult));
+
+          // Step 3: Send AI response back to backend for parsing and saving
+          const saveRes = await axios.post(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + `/interviews/${id}/feedback`, 
+            { jsonResponse: aiText },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          setFeedback(saveRes.data);
           setGenerating(false);
         } else {
           setFeedback(res.data);

@@ -8,6 +8,9 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 
+// Puter.js is loaded via <script> in index.html
+declare const puter: any;
+
 interface ChatMessage {
   sender: 'USER' | 'AI';
   content: string;
@@ -166,8 +169,35 @@ export default function InterviewRoomPage() {
         client.subscribe(`/topic/interview/${id}`, async (message) => {
           const payload = JSON.parse(message.body);
 
-          if (payload.type === 'THINKING') {
-            // Show a loading indicator in UI by pushing a temporary message
+          if (payload.type === 'REQUIRE_PUTER_AI') {
+            // Backend sent us the prompt — call Puter AI on the frontend
+            console.log('Received REQUIRE_PUTER_AI, calling puter.ai.chat...');
+            setMessages(prev => {
+              if (prev[prev.length - 1]?.sender === 'AI' && prev[prev.length - 1]?.content === 'Thinking...') return prev;
+              return [...prev, { sender: 'AI', content: 'Thinking...' }];
+            });
+
+            try {
+              const aiResult = await puter.ai.chat(payload.prompt);
+              const aiText = typeof aiResult === 'string' ? aiResult : (aiResult?.message?.content || JSON.stringify(aiResult));
+              console.log('Puter AI response received, sending back to backend...');
+
+              // Send AI response back to backend for parsing and saving
+              if (client.connected) {
+                client.publish({
+                  destination: '/app/chat.saveAiResponse',
+                  body: JSON.stringify({ sessionId: id, jsonResponse: aiText })
+                });
+              }
+            } catch (err) {
+              console.error('Puter AI call failed:', err);
+              setMessages(prev => {
+                const newMsgs = prev.filter(m => m.content !== 'Thinking...');
+                return [...newMsgs, { sender: 'AI', content: 'Sorry, AI is temporarily unavailable. Please try again.' }];
+              });
+            }
+          } else if (payload.type === 'THINKING') {
+            // Legacy thinking indicator (kept for compatibility)
             setMessages(prev => {
               if (prev[prev.length - 1]?.sender === 'AI' && prev[prev.length - 1]?.content === 'Thinking...') return prev;
               return [...prev, { sender: 'AI', content: 'Thinking...' }];

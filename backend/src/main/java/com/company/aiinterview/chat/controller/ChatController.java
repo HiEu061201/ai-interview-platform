@@ -19,7 +19,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import com.example.gemini.service.GeminiService;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -32,10 +31,7 @@ public class ChatController {
     private final ChatMessageRepository chatMessageRepository;
     private final InterviewSessionRepository sessionRepository;
     private final AiService aiService;
-    private final GeminiService geminiService;
 
-    @org.springframework.beans.factory.annotation.Value("${app.deepseek.model:deepseek-chat}")
-    private String deepseekModel;
 
     @MessageMapping("/chat.sendMessage")
     @Transactional
@@ -66,25 +62,54 @@ public class ChatController {
         // Fetch History
         List<ChatMessage> chatHistory = chatMessageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId);
 
-        // Send THINKING indicator to Topic
-        Map<String, Object> thinkingCommand = new HashMap<>();
-        thinkingCommand.put("type", "THINKING");
-        messagingTemplate.convertAndSend("/topic/interview/" + sessionId, thinkingCommand);
-
-        // Process AI Response - Build prompt for backend execution
+        // Send THINKING indicator to Topic (handled by frontend now, but keeping for compatibility)
+        // We will send REQUIRE_PUTER_AI to tell frontend to call puter
         String prompt = aiService.buildPrompt(session, chatHistory, incomingMessage.getContent());
-        String jsonResponse = geminiService.generateText(prompt);
 
-        log.info("Received AI response for session {}: {}", sessionId, jsonResponse);
+        Map<String, Object> requirePuterCommand = new HashMap<>();
+        requirePuterCommand.put("type", "REQUIRE_PUTER_AI");
+        requirePuterCommand.put("prompt", prompt);
+        messagingTemplate.convertAndSend("/topic/interview/" + sessionId, requirePuterCommand);
+    }
+
+    @MessageMapping("/chat.saveAiResponse")
+    @Transactional
+    public void saveAiResponse(@Payload com.company.aiinterview.chat.dto.SaveAiResponsePayload payload, SimpMessageHeaderAccessor headerAccessor) {
+        Long sessionId = payload.getSessionId();
+        String jsonResponse = payload.getJsonResponse();
+        log.info("Received AI response from Puter frontend for session {}", sessionId);
+
+        InterviewSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Session not found"));
+
+        if (session.getStatus() == InterviewStatus.COMPLETED || session.getStatus() == InterviewStatus.CANCELLED) {
+            log.warn("Attempted to save AI response for a completed or cancelled session: {}", sessionId);
+            return;
+        }
+
+        int currentTurn = session.getCurrentTurn() == null ? 0 : session.getCurrentTurn();
+
+        // Get the latest user message to update with scores
+        List<ChatMessage> userMessages = chatMessageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId).stream()
+                .filter(m -> m.getSender() == Sender.USER)
+                .toList();
+                
+        ChatMessage lastUserMessage = null;
+        if (!userMessages.isEmpty()) {
+            lastUserMessage = userMessages.get(userMessages.size() - 1);
+        }
+
         OutgoingMessage aiResponse = aiService.parseAiResponse(jsonResponse);
 
-        // Update user message with evaluation
-        userMessage.setScoreClarity(aiResponse.getClarity());
-        userMessage.setScoreTechnical(aiResponse.getTechnicalDepth());
-        userMessage.setScoreConfidence(aiResponse.getConfidence());
-        userMessage.setSuggestedAnswer(aiResponse.getSuggestedAnswer());
-        userMessage.setCategoryTopic(aiResponse.getCategoryTopic());
-        chatMessageRepository.save(userMessage);
+        if (lastUserMessage != null) {
+            // Update user message with evaluation
+            lastUserMessage.setScoreClarity(aiResponse.getClarity());
+            lastUserMessage.setScoreTechnical(aiResponse.getTechnicalDepth());
+            lastUserMessage.setScoreConfidence(aiResponse.getConfidence());
+            lastUserMessage.setSuggestedAnswer(aiResponse.getSuggestedAnswer());
+            lastUserMessage.setCategoryTopic(aiResponse.getCategoryTopic());
+            chatMessageRepository.save(lastUserMessage);
+        }
 
         // Save AI Message
         ChatMessage aiDbMessage = ChatMessage.builder()
@@ -92,13 +117,13 @@ public class ChatController {
                 .sender(Sender.AI)
                 .messageContent(aiResponse.getContent())
                 .messageType("TEXT")
-                .turnNo(currentTurn + 1)
-                .modelName(deepseekModel)
+                .turnNo(currentTurn)
+                .modelName("puter-ai")
                 .build();
         chatMessageRepository.save(aiDbMessage);
 
         // Update Session Turn
-        session.setCurrentTurn(currentTurn + 1);
+        session.setCurrentTurn(currentTurn);
         sessionRepository.save(session);
 
         // Add type to the response so frontend can differentiate
