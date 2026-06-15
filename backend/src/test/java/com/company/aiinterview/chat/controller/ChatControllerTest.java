@@ -34,6 +34,8 @@ class ChatControllerTest {
     private InterviewSessionRepository sessionRepository;
     @Mock
     private AiService aiService;
+    @Mock
+    private com.example.gemini.service.GeminiService geminiService;
 
     @InjectMocks
     private ChatController chatController;
@@ -64,13 +66,24 @@ class ChatControllerTest {
 
         when(aiService.buildPrompt(eq(mockSession), any(), eq("Hello AI"))).thenReturn("Test Prompt");
 
+        when(geminiService.generateText("Test Prompt")).thenReturn("{}");
+        
+        OutgoingMessage mockResponse = OutgoingMessage.builder()
+                .sender("AI")
+                .content("Next Question")
+                .clarity(80)
+                .technicalDepth(75)
+                .confidence(90)
+                .build();
+        when(aiService.parseAiResponse("{}")).thenReturn(mockResponse);
+
         chatController.sendMessage(incomingMessage, headerAccessor);
 
-        // Verify user message saved
-        verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
+        // Verify messages saved (1 user initial + 1 user update + 1 AI)
+        verify(chatMessageRepository, times(3)).save(any(ChatMessage.class));
         
-        // Verify broadcast EXECUTE_AI
-        verify(messagingTemplate).convertAndSend(eq("/topic/interview/1"), any(java.util.Map.class));
+        // Verify broadcast (1 THINKING + 1 AI_RESPONSE)
+        verify(messagingTemplate, times(2)).convertAndSend(eq("/topic/interview/1"), any(java.util.Map.class));
     }
 
 
