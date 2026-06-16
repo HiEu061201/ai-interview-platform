@@ -1,12 +1,13 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Home, FileText, PlusCircle, User, Bell, Briefcase, BookOpen, Bookmark } from 'lucide-react';
+import { Home, FileText, PlusCircle, User, Bell, Briefcase, BookOpen, Bookmark, Menu, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -24,20 +25,40 @@ export default function DashboardLayout() {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-slate-200 flex flex-col">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <div className="w-4 h-4 text-white">
-              {/* React icon mock */}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19 12c0 3.866-3.134 7-7 7s-7-3.134-7-7 3.134-7 7-7 7 3.134 7 7z" strokeDasharray="4 4"></path>
-              </svg>
+      <div 
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col transform transition-transform duration-300 md:relative md:translate-x-0",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="p-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
+              <div className="w-4 h-4 text-white">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19 12c0 3.866-3.134 7-7 7s-7-3.134-7-7 3.134-7 7-7 7 3.134 7 7z" strokeDasharray="4 4"></path>
+                </svg>
+              </div>
             </div>
+            <span className="font-semibold text-lg text-slate-800 line-clamp-1">AI Mock Interview</span>
           </div>
-          <span className="font-semibold text-lg text-slate-800">AI Mock Interview</span>
+          <button 
+            className="md:hidden p-2 text-slate-400 hover:text-slate-600"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
         
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
@@ -49,6 +70,7 @@ export default function DashboardLayout() {
               <Link
                 key={item.name}
                 to={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm",
                   isActive 
@@ -65,11 +87,17 @@ export default function DashboardLayout() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="h-16 flex items-center justify-end px-8 bg-white/50 backdrop-blur-sm border-b border-transparent">
+        <header className="h-16 flex items-center justify-between md:justify-end px-4 md:px-8 bg-white/50 backdrop-blur-sm border-b border-transparent shrink-0">
+           <button 
+             className="md:hidden p-2 text-slate-400 hover:text-slate-600 transition-colors"
+             onClick={() => setIsMobileMenuOpen(true)}
+           >
+             <Menu className="w-6 h-6" />
+           </button>
            <div className="flex items-center gap-4">
-              <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+              <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors hidden sm:block">
                  <Bell className="w-5 h-5" />
               </button>
               <div className="relative">
@@ -82,7 +110,7 @@ export default function DashboardLayout() {
                 
                 {showDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50">
-                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
+                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center" onClick={() => setShowDropdown(false)}>
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                       My Profile
                     </Link>
@@ -99,7 +127,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
           <Outlet />
         </main>
       </div>

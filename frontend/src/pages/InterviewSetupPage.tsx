@@ -97,7 +97,7 @@ export default function InterviewSetupPage() {
         <h1 className="text-3xl font-bold text-slate-800">Interview Setup</h1>
         
         {/* Stepper */}
-        <div className="flex items-center gap-4 text-sm font-medium text-slate-400">
+        <div className="hidden sm:flex items-center gap-4 text-sm font-medium text-slate-400">
           <div className="flex items-center gap-2 text-blue-600">
             <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
             Role Details
@@ -144,7 +144,7 @@ export default function InterviewSetupPage() {
             {/* Experience Level */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Experience Level</label>
-              <div className="flex items-center gap-6 h-12">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 min-h-[48px] py-2">
                 {['Fresher', 'Junior', 'Senior'].map((opt) => (
                   <label key={opt} className="flex items-center gap-2 cursor-pointer">
                     <input 
@@ -184,7 +184,7 @@ export default function InterviewSetupPage() {
             {/* Interview Type */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Interview Type</label>
-              <div className="flex items-center gap-6 h-12">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 min-h-[48px] py-2">
                 {['Technical', 'Behavioral'].map((opt) => (
                   <label key={opt} className="flex items-center gap-2 cursor-pointer">
                     <input 
@@ -262,13 +262,13 @@ export default function InterviewSetupPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-6 border-t border-slate-100">
-             <button className="px-6 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
+             <button className="w-full sm:w-auto px-6 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
                Previous
              </button>
              <button 
                onClick={handleLaunch}
-               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-md shadow-blue-200"
+               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-md shadow-blue-200"
              >
                <Play className="w-4 h-4 fill-current" />
                Launch Interview

@@ -35,7 +35,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="bg-neumorph p-8 rounded-3xl shadow-neumorph animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-neumorph p-6 sm:p-8 rounded-3xl shadow-neumorph animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       <div className="text-center mb-8">
         <div className="w-12 h-12 bg-neumorph rounded-xl flex items-center justify-center mx-auto mb-4 shadow-neumorph-button text-blue-600">

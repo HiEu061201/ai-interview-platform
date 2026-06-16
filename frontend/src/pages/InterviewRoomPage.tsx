@@ -289,19 +289,19 @@ export default function InterviewRoomPage() {
               </svg>
             </div>
           </div>
-          <span className="font-semibold text-lg text-slate-800">AI Mock Interview</span>
+          <span className="font-semibold text-base sm:text-lg text-slate-800 line-clamp-1">AI Mock Interview</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium font-mono text-sm border ${timeLeft <= 60 ? 'bg-red-50 text-red-600 border-red-200 animate-pulse' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
             <Clock className={`w-4 h-4 ${timeLeft <= 60 ? 'text-red-500' : 'text-slate-500'}`} />
             {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
           </div>
           <button
             onClick={handleEndInterview}
-            className="flex items-center gap-2 px-4 py-2 border border-orange-200 text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 border border-orange-200 text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg text-sm font-medium transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            End Interview
+            <span className="hidden sm:inline">End Interview</span>
           </button>
         </div>
       </header>
@@ -310,7 +310,7 @@ export default function InterviewRoomPage() {
       <main className="flex-1 relative w-full h-full p-4 lg:p-8 flex flex-col lg:flex-row gap-6 justify-center max-w-[1600px] mx-auto animate-in fade-in duration-700">
 
         {/* Left Side: Video & Chat Overlay */}
-        <div className="flex-1 bg-[#1e293b] rounded-3xl overflow-hidden relative shadow-2xl flex flex-col min-h-[500px]">
+        <div className="flex-1 bg-[#1e293b] rounded-3xl overflow-hidden relative shadow-2xl flex flex-col min-h-[350px] lg:min-h-[500px]">
           {/* Mock Video Feed */}
           <div className="absolute inset-0 z-0">
             <img
@@ -425,17 +425,17 @@ export default function InterviewRoomPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between mt-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-2 gap-2">
               <button
                 onClick={toggleListen}
-                className={`px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all font-medium shadow-sm ${isListening ? 'bg-red-500 hover:bg-red-600 shadow-red-200 text-white animate-pulse' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
+                className={`w-full sm:w-auto px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all font-medium shadow-sm ${isListening ? 'bg-red-500 hover:bg-red-600 shadow-red-200 text-white animate-pulse' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
               >
                 <Mic className="w-5 h-5" />
                 {isListening ? 'Listening...' : 'Voice Input'}
               </button>
               <button
                 onClick={handleSendMessage}
-                className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md shadow-blue-200 flex items-center gap-2"
+                className="w-full sm:w-auto px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md shadow-blue-200 flex items-center justify-center gap-2"
               >
                 Send Answer
                 <Send className="w-4 h-4" />

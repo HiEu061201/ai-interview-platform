@@ -56,7 +56,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-neumorph p-8 rounded-3xl shadow-neumorph animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="bg-neumorph p-6 sm:p-8 rounded-3xl shadow-neumorph animate-in fade-in slide-in-from-bottom-4 duration-500">
       
       <div className="text-center mb-8">
         <div className="w-12 h-12 bg-neumorph rounded-xl flex items-center justify-center mx-auto mb-4 shadow-neumorph-button text-blue-600">
@@ -129,7 +129,7 @@ export default function LoginPage() {
         <span className="w-1/5 border-b border-slate-200 lg:w-1/4"></span>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 items-center">
+      <div className="mt-6 flex flex-col sm:flex-row gap-4 items-center justify-center w-full">
         <div className="flex justify-center overflow-hidden h-[42px] rounded-xl shadow-neumorph-button bg-neumorph">
            <GoogleLogin
              onSuccess={handleGoogleSuccess}
@@ -139,7 +139,7 @@ export default function LoginPage() {
              size="large"
            />
         </div>
-        <button type="button" className="flex items-center justify-center gap-2 h-[42px] bg-neumorph rounded-xl text-slate-700 font-medium shadow-neumorph-button">
+        <button type="button" className="w-full flex items-center justify-center gap-2 h-[42px] bg-neumorph rounded-xl text-slate-700 font-medium shadow-neumorph-button">
           <Github className="w-5 h-5" />
           GitHub
         </button>
