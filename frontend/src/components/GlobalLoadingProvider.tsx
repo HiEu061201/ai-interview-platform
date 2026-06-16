@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import axios, { InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
 interface LoadingContextType {
@@ -12,8 +12,7 @@ export const useLoading = () => useContext(LoadingContext);
 
 // Track active requests
 let activeRequests = 0;
-let setGlobalLoading: ((loading: boolean) => void) | null = null;
-let setGlobalMessage: ((msg: string) => void) | null = null;
+// Unused exports removed
 let requestStartTimes: Map<string, number> = new Map();
 
 // Slow request threshold (ms)
@@ -22,11 +21,10 @@ const SLOW_REQUEST_THRESHOLD = 3000;
 export function GlobalLoadingProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [serverWaking, setServerWaking] = useState(false);
+
 
   useEffect(() => {
-    setGlobalLoading = setIsLoading;
-    setGlobalMessage = setLoadingMessage;
+    // Variables removed
 
     // --- Axios request interceptor: track start time ---
     const reqInterceptor = axios.interceptors.request.use((config: InternalAxiosRequestConfig) => {
@@ -86,8 +84,7 @@ export function GlobalLoadingProvider({ children }: { children: React.ReactNode 
       axios.interceptors.request.eject(reqInterceptor);
       axios.interceptors.response.eject(resInterceptor);
       clearInterval(slowCheckInterval);
-      setGlobalLoading = null;
-      setGlobalMessage = null;
+      // Ejected interceptors
     };
   }, []);
 
