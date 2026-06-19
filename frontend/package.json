@@ -34,6 +34,7 @@
     "react-markdown": "^10.1.0",
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.24.1",
+    "socket.io-client": "^4.8.3",
     "sockjs-client": "^1.6.1",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",

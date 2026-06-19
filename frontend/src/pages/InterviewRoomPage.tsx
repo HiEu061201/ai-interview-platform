@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mic, Send, LogOut, MessageSquare, Clock } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
+import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -37,7 +36,7 @@ export default function InterviewRoomPage() {
 
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
-  const stompClientRef = useRef<Client | null>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [timeoutCount, setTimeoutCount] = useState(0);
@@ -50,10 +49,10 @@ export default function InterviewRoomPage() {
       if (newCount >= 2) {
         handleEndInterview();
       } else {
-        if (stompClientRef.current?.connected) {
-          stompClientRef.current.publish({
-            destination: '/app/chat.sendMessage',
-            body: JSON.stringify({ sessionId: id, content: "I didn't answer in time. Please skip to the next question." })
+        if (socketRef.current?.connected) {
+          socketRef.current.emit('send_message', { 
+            sessionId: id, 
+            messageContent: "I didn't answer in time. Please skip to the next question." 
           });
         }
         setTimeLeft(300);
@@ -158,87 +157,69 @@ export default function InterviewRoomPage() {
     // We assume the user has logged in and has a token
     const token = localStorage.getItem('token');
 
-    const client = new Client({
-      webSocketFactory: () => new SockJS(`${import.meta.env.VITE_WS_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/ws' : 'http://localhost:8080/ws')}` + '/interview'),
-      connectHeaders: {
-        Authorization: `Bearer ${token}`
-      },
-      onConnect: () => {
-        console.log('Connected to WebSocket');
-        // Subscribe to AI responses for this specific session
-        client.subscribe(`/topic/interview/${id}`, async (message) => {
-          const payload = JSON.parse(message.body);
+    const socketUrl = import.meta.env.VITE_WS_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com' : 'http://localhost:8080');
+    const socket = io(socketUrl, {
+      auth: { token }
+    });
 
-          if (payload.type === 'REQUIRE_PUTER_AI') {
-            // Backend sent us the prompt — call Puter AI on the frontend
-            console.log('Received REQUIRE_PUTER_AI, calling puter.ai.chat...');
-            setMessages(prev => {
-              if (prev[prev.length - 1]?.sender === 'AI' && prev[prev.length - 1]?.content === 'Thinking...') return prev;
-              return [...prev, { sender: 'AI', content: 'Thinking...' }];
-            });
+    socket.on('connect', () => {
+      console.log('Connected to socket.io');
+      socket.emit('join_room', { sessionId: id });
+    });
 
-            try {
-              const aiResult = await puter.ai.chat(payload.prompt);
-              const aiText = typeof aiResult === 'string' ? aiResult : (aiResult?.message?.content || JSON.stringify(aiResult));
-              console.log('Puter AI response received, sending back to backend...');
-
-              // Send AI response back to backend for parsing and saving
-              if (client.connected) {
-                client.publish({
-                  destination: '/app/chat.saveAiResponse',
-                  body: JSON.stringify({ sessionId: id, jsonResponse: aiText })
-                });
-              }
-            } catch (err) {
-              console.error('Puter AI call failed:', err);
-              setMessages(prev => {
-                const newMsgs = prev.filter(m => m.content !== 'Thinking...');
-                return [...newMsgs, { sender: 'AI', content: 'Sorry, AI is temporarily unavailable. Please try again.' }];
-              });
-            }
-          } else if (payload.type === 'THINKING') {
-            // Legacy thinking indicator (kept for compatibility)
-            setMessages(prev => {
-              if (prev[prev.length - 1]?.sender === 'AI' && prev[prev.length - 1]?.content === 'Thinking...') return prev;
-              return [...prev, { sender: 'AI', content: 'Thinking...' }];
-            });
-          } else if (payload.type === 'AI_RESPONSE') {
-            setMessages(prev => {
-              // Remove "Thinking..." message
-              const newMsgs = prev.filter(m => m.content !== 'Thinking...');
-              return [...newMsgs, { sender: 'AI', content: payload.content }];
-            });
-            setEvaluation({
-              clarity: payload.clarity,
-              technicalDepth: payload.technicalDepth,
-              confidence: payload.confidence
-            });
-
-            setTimeLeft(300); // Reset timer when AI speaks
-
-            // Text-to-Speech
-            if ('speechSynthesis' in window) {
-              window.speechSynthesis.cancel(); // Stop any ongoing speech
-              const utterance = new SpeechSynthesisUtterance(payload.content);
-              utterance.lang = 'en-US';
-              window.speechSynthesis.speak(utterance);
-            }
-          }
+    socket.on('receive_message', (payload) => {
+      if (payload.sender === 'AI') {
+        setMessages(prev => {
+          // Remove "Thinking..." message if exists
+          const newMsgs = prev.filter(m => m.content !== 'Thinking...');
+          return [...newMsgs, { sender: 'AI', content: payload.messageContent }];
         });
-      },
-      onStompError: (frame) => {
-        console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);
+        
+        setEvaluation({
+          clarity: payload.scoreClarity || 0,
+          technicalDepth: payload.scoreTechnical || 0,
+          confidence: payload.scoreConfidence || 0
+        });
+
+        setTimeLeft(300); // Reset timer when AI speaks
+
+        // Text-to-Speech
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel(); // Stop any ongoing speech
+          const utterance = new SpeechSynthesisUtterance(payload.messageContent);
+          utterance.lang = 'en-US';
+          window.speechSynthesis.speak(utterance);
+        }
+      } else {
+        // If it's a message echoed back or from elsewhere
+        // But we already optimistically add user messages, so we might skip this
+        // or just rely on server to avoid duplicates
       }
     });
 
-    client.activate();
-    stompClientRef.current = client;
+    socket.on('error', (err) => {
+      console.error('Socket error:', err);
+    });
+
+    socket.on('request_ai_generate', async ({ sessionId, prompt }) => {
+      try {
+        const aiResult = await puter.ai.chat(prompt);
+        const aiText = typeof aiResult === 'string' ? aiResult : (aiResult?.message?.content || JSON.stringify(aiResult));
+        
+        socket.emit('submit_ai_response', { sessionId, jsonResponse: aiText });
+      } catch (err) {
+        console.error('Failed to generate AI response from frontend:', err);
+        setMessages(prev => {
+          const newMsgs = prev.filter(m => m.content !== 'Thinking...');
+          return [...newMsgs, { sender: 'AI', content: 'Sorry, I encountered an error connecting to Puter AI. Please try again.' }];
+        });
+      }
+    });
+
+    socketRef.current = socket;
 
     return () => {
-      if (stompClientRef.current) {
-        stompClientRef.current.deactivate();
-      }
+      socket.disconnect();
     };
   }, [id]);
 
@@ -247,14 +228,11 @@ export default function InterviewRoomPage() {
     if (!plainText) return;
 
     // Optimistically add user message to UI
-    setMessages(prev => [...prev, { sender: 'USER', content: input }]);
+    setMessages(prev => [...prev, { sender: 'USER', content: input }, { sender: 'AI', content: 'Thinking...' }]);
 
     // Send to backend
-    if (stompClientRef.current?.connected) {
-      stompClientRef.current.publish({
-        destination: '/app/chat.sendMessage',
-        body: JSON.stringify({ sessionId: id, content: input })
-      });
+    if (socketRef.current?.connected) {
+      socketRef.current.emit('send_message', { sessionId: id, messageContent: input });
     }
 
     setInput('');
