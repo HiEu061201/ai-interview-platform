@@ -1,4 +1,4 @@
-import { puter } from '@heyputer/puter.js';
+
 import { IInterviewSession } from '../models/InterviewSession';
 import { IChatMessage, Sender } from '../models/ChatMessage';
 
@@ -101,41 +101,3 @@ export const parseAiResponse = (jsonResponse: string) => {
   }
 };
 
-export const getAiResponse = async (prompt: string) => {
-  try {
-    const result = await puter.ai.chat(prompt);
-    // Extract text depending on Puter's exact response structure
-    let responseText = '';
-    if (typeof result === 'string') {
-      responseText = result;
-    } else if (result?.message?.content) {
-      const content = result.message.content;
-      responseText = typeof content === 'string' ? content : JSON.stringify(content);
-    } else {
-      responseText = JSON.stringify(result);
-    }
-    return parseAiResponse(responseText);
-  } catch (error) {
-    console.error('Puter API Error', error);
-    throw new Error('Failed to generate AI response');
-  }
-};
-
-export const getAiTextResponse = async (prompt: string): Promise<string> => {
-  try {
-    const result = await puter.ai.chat(prompt);
-    let responseText = '';
-    if (typeof result === 'string') {
-      responseText = result;
-    } else if (result?.message?.content) {
-      const content = result.message.content;
-      responseText = typeof content === 'string' ? content : JSON.stringify(content);
-    } else {
-      responseText = JSON.stringify(result);
-    }
-    return responseText;
-  } catch (error) {
-    console.error('Puter API Error', error);
-    throw new Error('Failed to generate AI text response');
-  }
-};

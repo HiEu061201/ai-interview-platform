@@ -10,9 +10,8 @@ import {
 } from '../controllers/interviewController';
 import { 
   getFeedback, 
-  getFeedbackPrompt, 
-  saveFeedback, 
-  generateFeedback 
+  getFeedbackPrompt,
+  saveFeedback
 } from '../controllers/feedbackController';
 import { protect } from '../middlewares/authMiddleware';
 
@@ -33,6 +32,5 @@ router.post('/extract-cv', protect, upload.single('file'), extractCv);
 router.get('/:sessionId/feedback', protect, getFeedback);
 router.get('/:sessionId/feedback/prompt', protect, getFeedbackPrompt);
 router.post('/:sessionId/feedback', protect, saveFeedback);
-router.post('/:sessionId/feedback/generate', protect, generateFeedback);
 
 export default router;

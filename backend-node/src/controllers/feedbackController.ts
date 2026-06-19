@@ -3,7 +3,7 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 import { InterviewSession, InterviewStatus } from '../models/InterviewSession';
 import { InterviewFeedback } from '../models/Feedback';
 import { ChatMessage, Sender } from '../models/ChatMessage';
-import { buildFeedbackPrompt, getAiTextResponse } from '../services/aiService';
+import { buildFeedbackPrompt } from '../services/aiService';
 import { User } from '../models/User';
 import { UserQuest, QuestType } from '../models/Quest';
 
@@ -168,67 +168,7 @@ export const saveFeedback = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// POST /api/interviews/:sessionId/feedback/generate  (generate via Gemini)
-export const generateFeedback = async (req: AuthRequest, res: Response) => {
-  try {
-    const { sessionId } = req.params;
-    const userId = req.user!._id;
 
-    const session = await InterviewSession.findById(sessionId);
-    if (!session) return res.status(404).json({ message: 'Session not found' });
-    if (session.user.toString() !== userId.toString()) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-
-    const chatHistory = await ChatMessage.find({ session: sessionId }).sort({ createdAt: 1 });
-    if (chatHistory.length === 0) {
-      return res.status(400).json({ message: 'Không thể tạo feedback cho session rỗng' });
-    }
-
-    // Check if already exists
-    const existingFeedback = await InterviewFeedback.findOne({ session: sessionId });
-    if (existingFeedback) {
-      return res.json(mapFeedbackToResponse(existingFeedback, buildQaReview(chatHistory)));
-    }
-
-    const prompt = buildFeedbackPrompt(session, chatHistory);
-    const jsonResponse = await getAiTextResponse(prompt);
-
-    // Parse AI JSON
-    let cleanedJson = jsonResponse.trim();
-    if (cleanedJson.startsWith('```json')) cleanedJson = cleanedJson.substring(7);
-    if (cleanedJson.startsWith('```')) cleanedJson = cleanedJson.substring(3);
-    if (cleanedJson.endsWith('```')) cleanedJson = cleanedJson.substring(0, cleanedJson.length - 3);
-
-    const parsed = JSON.parse(cleanedJson.trim());
-
-    const feedback = await InterviewFeedback.create({
-      session: sessionId as string,
-      overallScore: parsed.overallScore || 0,
-      technicalScore: parsed.technicalScore || 0,
-      communicationScore: parsed.communicationScore || 0,
-      clarityScore: parsed.clarityScore || 0,
-      confidenceScore: parsed.confidenceScore || 0,
-      strengths: parsed.strengths || '',
-      weaknesses: parsed.weaknesses || '',
-      detailedReview: parsed.detailedReview || '',
-      improvementPlan: parsed.improvementPlan || '',
-      recommendationLevel: parsed.recommendationLevel || 'NEUTRAL',
-    });
-
-    session.overallAiSummary = parsed.detailedReview || '';
-    session.overallScore = parsed.overallScore || 0;
-    await session.save();
-
-    // Process quest completion after feedback generated
-    await processQuestCompletion(session, userId.toString());
-
-    res.status(201).json(mapFeedbackToResponse(feedback, buildQaReview(chatHistory)));
-  } catch (error) {
-    console.error('generateFeedback error:', error);
-    res.status(500).json({ message: 'Lỗi khi tạo feedback AI' });
-  }
-};
 
 async function processQuestCompletion(session: any, userId: string) {
   try {
