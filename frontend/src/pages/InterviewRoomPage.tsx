@@ -157,7 +157,7 @@ export default function InterviewRoomPage() {
     // We assume the user has logged in and has a token
     const token = localStorage.getItem('token');
 
-    const socketUrl = import.meta.env.VITE_WS_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com' : 'http://localhost:8080');
+    const socketUrl = import.meta.env.VITE_WS_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-x4vn.onrender.com' : 'http://localhost:8080');
     const socket = io(socketUrl, {
       auth: { token }
     });
