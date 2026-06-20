@@ -56,7 +56,8 @@ public class AiServiceImpl implements AiService {
         contextBuilder.append("USER: ").append(latestUserMessage).append("\n\n");
 
         contextBuilder.append("Evaluate the USER's latest answer and provide the next interview question. ")
-                .append("IMPORTANT: You MUST communicate and ask your next question in Vietnamese.\n")
+                .append("IMPORTANT: You MUST communicate and ask your next question in Vietnamese. ")
+                .append("CRITICAL RULE: You must ask EXACTLY ONE single, focused question at a time. Do NOT ask multiple questions, sub-questions, or multi-part questions in a single response.\n")
                 .append("You MUST return your response as a pure JSON object without markdown formatting, with the following keys:\n")
                 .append("- 'clarity': integer 0-100\n")
                 .append("- 'technicalDepth': integer 0-100\n")

@@ -28,7 +28,7 @@ export const buildPrompt = (session: IInterviewSession, chatHistory: IChatMessag
   }
   contextBuilder += `USER: ${latestUserMessage}\n\n`;
 
-  contextBuilder += `Evaluate the USER's latest answer and provide the next interview question. IMPORTANT: You MUST communicate and ask your next question in Vietnamese.\n`;
+  contextBuilder += `Evaluate the USER's latest answer and provide the next interview question. IMPORTANT: You MUST communicate and ask your next question in Vietnamese. CRITICAL RULE: You must ask EXACTLY ONE single, focused question at a time. Do NOT ask multiple questions, sub-questions, or multi-part questions in a single response.\n`;
   contextBuilder += `You MUST return your response as a pure JSON object without markdown formatting, with the following keys:\n`;
   contextBuilder += `- 'clarity': integer 0-100\n`;
   contextBuilder += `- 'technicalDepth': integer 0-100\n`;
