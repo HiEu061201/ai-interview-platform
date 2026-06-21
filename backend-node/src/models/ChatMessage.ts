@@ -20,6 +20,10 @@ export interface IChatMessage extends Document {
   scoreClarity?: number;
   scoreTechnical?: number;
   scoreConfidence?: number;
+  scoreSituation?: number;
+  scoreTask?: number;
+  scoreAction?: number;
+  scoreResult?: number;
   categoryTopic?: string;
   createdAt: Date;
 }
@@ -39,6 +43,10 @@ const chatMessageSchema: Schema = new Schema(
     scoreClarity: { type: Number },
     scoreTechnical: { type: Number },
     scoreConfidence: { type: Number },
+    scoreSituation: { type: Number },
+    scoreTask: { type: Number },
+    scoreAction: { type: Number },
+    scoreResult: { type: Number },
     categoryTopic: { type: String },
   },
   {

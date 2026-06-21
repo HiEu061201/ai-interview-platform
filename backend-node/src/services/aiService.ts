@@ -16,6 +16,11 @@ export const buildPrompt = (session: IInterviewSession, chatHistory: IChatMessag
   if (session.jobDescription?.trim()) {
     contextBuilder += `The job description is: ${session.jobDescription}\n`;
   }
+  
+  const isBehavioral = session.interviewType === 'Behavioral' || session.interviewType === 'Phỏng vấn hành vi';
+  if (isBehavioral) {
+    contextBuilder += `This is a BEHAVIORAL INTERVIEW. You must ask behavioral and situational questions. Evaluate the candidate's answer using the STAR method (Situation, Task, Action, Result).\n`;
+  }
   contextBuilder += '\n';
 
   if (session.isHardcore) {
@@ -31,8 +36,14 @@ export const buildPrompt = (session: IInterviewSession, chatHistory: IChatMessag
   contextBuilder += `Evaluate the USER's latest answer and provide the next interview question. IMPORTANT: You MUST communicate and ask your next question in Vietnamese. CRITICAL RULE: You must ask EXACTLY ONE single, focused question at a time. Do NOT ask multiple questions, sub-questions, or multi-part questions in a single response.\n`;
   contextBuilder += `You MUST return your response as a pure JSON object without markdown formatting, with the following keys:\n`;
   contextBuilder += `- 'clarity': integer 0-100\n`;
-  contextBuilder += `- 'technicalDepth': integer 0-100\n`;
+  contextBuilder += `- 'technicalDepth': integer 0-100 (For behavioral interviews, this represents the depth of their action/impact)\n`;
   contextBuilder += `- 'confidence': integer 0-100\n`;
+  if (isBehavioral) {
+    contextBuilder += `- 'situation': integer 0-100 (STAR - Situation rating)\n`;
+    contextBuilder += `- 'task': integer 0-100 (STAR - Task rating)\n`;
+    contextBuilder += `- 'action': integer 0-100 (STAR - Action rating)\n`;
+    contextBuilder += `- 'result': integer 0-100 (STAR - Result rating)\n`;
+  }
   contextBuilder += `- 'suggestedAnswer': string, a better way the user could have answered the previous question (leave empty if their answer was good enough or if they just greeted)\n`;
   contextBuilder += `- 'categoryTopic': string, classify the core topic of the PREVIOUS question/answer (e.g., 'Java', 'System Design', 'Database', 'Behavioral', 'Networking', 'React'). Keep it to 1-2 words. Leave empty if N/A.\n`;
   contextBuilder += `- 'nextQuestion': string, the text of your next question.\n`;
@@ -88,6 +99,10 @@ export const parseAiResponse = (jsonResponse: string) => {
       clarity: parsed.clarity || 0,
       technicalDepth: parsed.technicalDepth || 0,
       confidence: parsed.confidence || 0,
+      situation: parsed.situation,
+      task: parsed.task,
+      action: parsed.action,
+      result: parsed.result,
       suggestedAnswer: parsed.suggestedAnswer || '',
       categoryTopic: parsed.categoryTopic || 'Khác'
     };

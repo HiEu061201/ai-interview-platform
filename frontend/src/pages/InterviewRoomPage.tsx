@@ -19,6 +19,10 @@ interface Evaluation {
   clarity: number;
   technicalDepth: number;
   confidence: number;
+  situation?: number;
+  task?: number;
+  action?: number;
+  result?: number;
 }
 
 const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -31,9 +35,14 @@ export default function InterviewRoomPage() {
   const [evaluation, setEvaluation] = useState<Evaluation>({
     clarity: 0,
     technicalDepth: 0,
-    confidence: 0
+    confidence: 0,
+    situation: 0,
+    task: 0,
+    action: 0,
+    result: 0
   });
 
+  const [interviewType, setInterviewType] = useState<string>('');
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -75,6 +84,7 @@ export default function InterviewRoomPage() {
         const res = await axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://ai-interview-backend-ns52.onrender.com/api' : 'http://localhost:8080/api')}` + `/interviews/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        setInterviewType(res.data.interviewType || '');
         if (res.data.status === 'COMPLETED' || res.data.status === 'CANCELLED') {
           navigate(`/interviews/${id}/report`);
         }
@@ -175,11 +185,16 @@ export default function InterviewRoomPage() {
           return [...newMsgs, { sender: 'AI', content: payload.messageContent }];
         });
         
-        setEvaluation({
+        setEvaluation(prev => ({
+          ...prev,
           clarity: payload.scoreClarity || 0,
           technicalDepth: payload.scoreTechnical || 0,
-          confidence: payload.scoreConfidence || 0
-        });
+          confidence: payload.scoreConfidence || 0,
+          situation: payload.scoreSituation || prev.situation || 0,
+          task: payload.scoreTask || prev.task || 0,
+          action: payload.scoreAction || prev.action || 0,
+          result: payload.scoreResult || prev.result || 0,
+        }));
 
         setTimeLeft(300); // Reset timer when AI speaks
 
@@ -342,38 +357,85 @@ export default function InterviewRoomPage() {
             <h3 className="font-semibold text-slate-800 mb-6">Real-time Evaluation</h3>
 
             <div className="space-y-5">
-              {/* Clarity */}
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-700">Clarity</span>
-                  <span className="text-xs font-bold text-orange-500 bg-orange-100 px-2 py-0.5 rounded-full">{evaluation.clarity}%</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-orange-400 rounded-full transition-all duration-1000" style={{ width: `${evaluation.clarity}%` }}></div>
-                </div>
-              </div>
+              {(interviewType === 'Behavioral' || interviewType === 'Phỏng vấn hành vi') ? (
+                <>
+                  {/* Situation */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-700">Situation</span>
+                      <span className="text-xs font-bold text-sky-500 bg-sky-100 px-2 py-0.5 rounded-full">{evaluation.situation}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-sky-500 rounded-full transition-all duration-1000" style={{ width: `${evaluation.situation}%` }}></div>
+                    </div>
+                  </div>
+                  {/* Task */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-700">Task</span>
+                      <span className="text-xs font-bold text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded-full">{evaluation.task}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-indigo-500 rounded-full transition-all duration-1000" style={{ width: `${evaluation.task}%` }}></div>
+                    </div>
+                  </div>
+                  {/* Action */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-700">Action</span>
+                      <span className="text-xs font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full">{evaluation.action}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${evaluation.action}%` }}></div>
+                    </div>
+                  </div>
+                  {/* Result */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-700">Result</span>
+                      <span className="text-xs font-bold text-violet-500 bg-violet-100 px-2 py-0.5 rounded-full">{evaluation.result}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-violet-500 rounded-full transition-all duration-1000" style={{ width: `${evaluation.result}%` }}></div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Clarity */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-700">Clarity</span>
+                      <span className="text-xs font-bold text-orange-500 bg-orange-100 px-2 py-0.5 rounded-full">{evaluation.clarity}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-orange-400 rounded-full transition-all duration-1000" style={{ width: `${evaluation.clarity}%` }}></div>
+                    </div>
+                  </div>
 
-              {/* Technical Depth */}
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-700">Technical Depth</span>
-                  <span className="text-xs font-bold text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">{evaluation.technicalDepth}%</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: `${evaluation.technicalDepth}%` }}></div>
-                </div>
-              </div>
+                  {/* Technical Depth */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-700">Technical Depth</span>
+                      <span className="text-xs font-bold text-blue-500 bg-blue-100 px-2 py-0.5 rounded-full">{evaluation.technicalDepth}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: `${evaluation.technicalDepth}%` }}></div>
+                    </div>
+                  </div>
 
-              {/* Confidence */}
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-700">Confidence</span>
-                  <span className="text-xs font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full">{evaluation.confidence}%</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${evaluation.confidence}%` }}></div>
-                </div>
-              </div>
+                  {/* Confidence */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium text-slate-700">Confidence</span>
+                      <span className="text-xs font-bold text-emerald-500 bg-emerald-100 px-2 py-0.5 rounded-full">{evaluation.confidence}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${evaluation.confidence}%` }}></div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

@@ -117,6 +117,10 @@ export const setupChatSocket = (io: Server) => {
           scoreClarity: aiResult.clarity,
           scoreTechnical: aiResult.technicalDepth,
           scoreConfidence: aiResult.confidence,
+          scoreSituation: (aiResult as any).situation,
+          scoreTask: (aiResult as any).task,
+          scoreAction: (aiResult as any).action,
+          scoreResult: (aiResult as any).result,
           categoryTopic: aiResult.categoryTopic
         });
 
